@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="author" content="Rohaan Wasim">
+        <meta name="description" content="Learning and practicing using the Javascript canvas.">
+        <meta name="viewport" content="width=device-width">
+        <title>Virtual Keyboard</title>
+        <link rel="stylesheet" href="styles/style.css" type="text/css">
+        <script src="scripts/main.js" defer></script>
+        <!-- 
+            These script files come from the WebAudioFont library which was created and is owned 
+            by Srgy Surkv (Github Repository Link: https://github.com/surikov/webaudiofont). 
+            I am using WebAudioFont for the sounds in my project.
+        -->
+        <script src='https://surikov.github.io/webaudiofont/npm/dist/WebAudioFontPlayer.js' defer></script>
+        <script>
+            var player;
+            var audioContext;
+            //Stores the instruments that are loaded
+            var instruments = new Map();
+            //Stores the selected instrument
+            var selectedInstrument;
+
+            function initializeAudio(){
+                audioContext = new window.AudioContext;
+                player = new WebAudioFontPlayer();
+                //Loading Piano
+                player.loader.startLoad(audioContext, "https://surikov.github.io/webaudiofontdata/sound/0000_SoundBlasterOld_sf2.js", "_tone_0000_SoundBlasterOld_sf2");
+                player.loader.waitLoad(function(){
+                    instruments.set("Piano", _tone_0000_SoundBlasterOld_sf2);
+                    }
+                );
+                //Loading Guitar
+                player.loader.startLoad(audioContext, "https://surikov.github.io/webaudiofontdata/sound/0240_JCLive_sf2_file.js", "_tone_0240_JCLive_sf2_file");
+                player.loader.waitLoad(function(){
+                    instruments.set("Guitar", _tone_0240_JCLive_sf2_file);
+                    }
+                );
+                //Loading Violin
+                player.loader.startLoad(audioContext, "https://surikov.github.io/webaudiofontdata/sound/0401_GeneralUserGS_sf2_file.js", "_tone_0401_GeneralUserGS_sf2_file");
+                player.loader.waitLoad(function(){
+                    instruments.set("Violin", _tone_0401_GeneralUserGS_sf2_file);
+                    }
+                );
+                //Loading Bass
+                player.loader.startLoad(audioContext, "https://surikov.github.io/webaudiofontdata/sound/0320_Chaos_sf2_file.js", "_tone_0320_Chaos_sf2_file");
+                player.loader.waitLoad(function(){
+                    instruments.set("Bass", _tone_0320_Chaos_sf2_file);
+                    }
+                );
+                //Loading Organ
+                player.loader.startLoad(audioContext, "https://surikov.github.io/webaudiofontdata/sound/0180_GeneralUserGS_sf2_file.js", "_tone_0180_GeneralUserGS_sf2_file");
+                player.loader.waitLoad(function(){
+                    instruments.set("Organ", _tone_0180_GeneralUserGS_sf2_file);
+                    //Setting the initial instrument based on the selected option. Initially, Piano is selected.
+                    let instrumentDropDown = document.getElementById("instrumentSelector");
+                    selectedInstrument = instruments.get(instrumentDropDown.value);
+                    }
+                );
+            }
+
+            function changeInstrument(event){
+                let instrumentChosen = event.target.value;
+                selectedInstrument = instruments.get(instrumentChosen);
+            }
+
+            function mousePressed(event){
+                pressedKey = event.target.id
+                let notePlayed = keyBindings.get(pressedKey);
+                if(!notePlayed.notePressed){
+                    player.queueWaveTable(audioContext, audioContext.destination, selectedInstrument, 0, notePlayed.noteNumber, 1);
+                }
+                playNote(pressedKey);
+            }
+
+            function mouseReleased(event){
+                let releasedKey = event.target.id;
+                stopNoteMouse(releasedKey);
+            }
+
+            function keyPressed(event){
+                event.preventDefault();
+                let pressedKey = event.key.toLowerCase();
+                if(keyBindings.has(pressedKey)){
+                    let notePlayed = keyBindings.get(pressedKey);
+                    if(!notePlayed.notePressed){
+                        player.queueWaveTable(audioContext, audioContext.destination, selectedInstrument, 0, notePlayed.noteNumber, 1);
+                    }
+                    playNote(pressedKey);
+                }
+            }
+
+            function keyReleased(event){
+                event.preventDefault();
+                let releasedKey = event.key.toLowerCase();
+                if(keyBindings.has(releasedKey)){
+                    stopNote(releasedKey);
+                }
+            }
+
+            //When the window + DOM elements have loaded, the initial setup occurs.
+            window.onload = (event => {
+                let docBody = document.querySelector("body");
+                docBody.addEventListener("keydown", keyPressed);
+                docBody.addEventListener("keyup", keyReleased);
+                let keysDiv = document.getElementById("spanDiv");
+                keysDiv.addEventListener("mousedown", mousePressed);
+                keysDiv.addEventListener("mouseup", mouseReleased);
+                let instrumentSelector = document.getElementById("instrumentSelector");
+                instrumentSelector.addEventListener("input", changeInstrument);
+                initializeAudio();
+                setUp();  
+            })
+        </script>
+    </head>
+    <body>
+        <h1>Theeano</h1>
+        <label for="instrumentSelector"></label>
+        <select id="instrumentSelector">
+            <!--<option>Piano</option>-->
+            <option>Guitar</option>
+            <!--<option>Violin</option>
+            <option>Bass</option>
+            <option>Organ</option>-->
+        </select>
+        <div id="canvasDiv">
+            <div id="spanDiv"> 
+                <span id="escape"></span
+                ><span id="f1"></span
+                ><span id="`"></span
+                ><span id="f2"></span
+                ><span id="1"></span
+                ><span id="2"></span
+                ><span id="f3"></span
+                ><span id="3"></span
+                ><span id="f4"></span
+                ><span id="4"></span
+                ><span id="f5"></span
+                ><span id="5"></span
+                ><span id="tab"></span
+                ><span id="q"></span
+                ><span id="capslock"></span
+                ><span id="w"></span
+                ><span id="a"></span
+                ><span id="s"></span
+                ><span id="e"></span
+                ><span id="d"></span
+                ><span id="r"></span
+                ><span id="f"></span
+                ><span id="t"></span
+                ><span id="g"></span
+                ><span id="u"></span
+                ><span id="i"></span
+                ><span id="j"></span
+                ><span id="o"></span
+                ><span id="k"></span
+                ><span id="l"></span
+                ><span id="p"></span
+                ><span id=";"></span
+                ><span id="["></span
+                ><span id="'"></span
+                ><span id="]"></span
+                ><span id="enter"></span
+                ><span id="f6"></span
+                ><span id="f7"></span
+                ><span id="7"></span
+                ><span id="f8"></span
+                ><span id="8"></span
+                ><span id="9"></span
+                ><span id="f9"></span
+                ><span id="0"></span
+                ><span id="f10"></span
+                ><span id="-"></span
+                ><span id="f11"></span
+                ><span id="="></span
+                ><span id="backspace"></span>
+            </div>
+            <canvas id="pageCanvas">
+                <p>Your browser does not support the Javascript Canvas.</p>
+            </canvas>
+        </div>
+        <div id="numKeysVisible">
+            <p># of Visible Keys: </p>
+            <button id="twelveKeys">12</button>
+            <button id="twentyFourKeys">24</button>
+            <button id="thirtySixKeys">36</button>
+            <button id="fortyNineKeys">49</button>
+        </div>
+        <div class="dropdown-cover">Virtual Piano</div>
+    </body>
+</html>
